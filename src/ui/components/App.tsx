@@ -5,7 +5,7 @@ import "@spectrum-web-components/theme/express/theme-light.js";
 
 // To learn more about using "swc-react" visit:
 // https://opensource.adobe.com/spectrum-web-components/using-swc-react/
-import { Button } from "@swc-react/button";
+import {Button} from "@/src/components/ui/button"
 import { Theme } from "@swc-react/theme";
 import React, { useState } from "react";
 import { DocumentSandboxApi } from "../../models/DocumentSandboxApi";
@@ -39,6 +39,7 @@ const App = ({ addOnUISdk, sandboxProxy ,store}: { addOnUISdk: AddOnSDKAPI; sand
                 <button onClick={handleClick} className="w-5/6">
                     Create Rectangle
                 </button>
+                
             </div>
         </Theme>
     );
