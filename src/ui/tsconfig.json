@@ -3,5 +3,6 @@
     "compilerOptions": {
         "lib": ["dom"]
     },
-    "include": ["./**/*"]
+    "include": ["./**/*"],
+    "jsx": "react-jsx",
 }

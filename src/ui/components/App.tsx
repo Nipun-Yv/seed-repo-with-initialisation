@@ -5,8 +5,9 @@ import "@spectrum-web-components/theme/express/theme-light.js";
 
 // To learn more about using "swc-react" visit:
 // https://opensource.adobe.com/spectrum-web-components/using-swc-react/
-import {Button} from "@/src/components/ui/button"
+
 import { Theme } from "@swc-react/theme";
+import {Button} from "../../../components/ui/button"
 import React, { useState } from "react";
 import { DocumentSandboxApi } from "../../models/DocumentSandboxApi";
 import "./App.css";
@@ -36,9 +37,10 @@ const App = ({ addOnUISdk, sandboxProxy ,store}: { addOnUISdk: AddOnSDKAPI; sand
 
                 <input value={name} onChange={e=>setName(e.currentTarget.value)}
                 className="w-1/2"/>
-                <button onClick={handleClick} className="w-5/6">
-                    Create Rectangle
-                </button>
+
+            <Button className="bg-white">
+                Hello blud
+            </Button>
                 
             </div>
         </Theme>

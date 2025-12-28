@@ -64,8 +64,20 @@ module.exports = {
                         }
                     }
                 ],
+                
                 include: sandboxPath,
                 exclude: /node_modules/
+            },
+            {
+                test: /\.(ts|tsx)$/, // Match TypeScript and React files
+        exclude: /node_modules/,
+        use: {
+          loader: 'ts-loader',
+          options: {
+            // This ensures ts-loader can handle the JSX in .tsx files
+            transpileOnly: true, 
+          },
+        },
             },
             {
                 test: /\.css$/i,
