@@ -1,0 +1,22 @@
+{
+    "testId": "3580e9d5-5a17-4a46-baad-1ded9052ff8e",
+    "name": "Express Add On Custom",
+    "version": "1.0.0",
+    "manifestVersion": 2,
+    "requirements": {
+        "apps": [
+            {
+                "name": "Express",
+                "apiVersion": 1
+            }
+        ]
+    },
+    "entryPoints": [
+        {
+            "type": "panel",
+            "id": "panel1",
+            "main": "index.html",
+            "documentSandbox": "code.js"
+        }
+    ]
+}

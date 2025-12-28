@@ -1,0 +1,47 @@
+{
+    "name": "express-add-on-custom",
+    "version": "1.0.0",
+    "description": "Adobe Creative Cloud Web Add-on.",
+    "scripts": {
+        "clean": "ccweb-add-on-scripts clean",
+        "build": "ccweb-add-on-scripts build --use webpack",
+        "start": "ccweb-add-on-scripts start --use webpack",
+        "package": "ccweb-add-on-scripts package --use webpack"
+    },
+    "keywords": [
+        "Adobe",
+        "Creative Cloud Web",
+        "Add-on",
+        "panel"
+    ],
+    "dependencies": {
+        "@radix-ui/react-slot": "^1.2.4",
+        "@swc-react/button": "1.7.0",
+        "@swc-react/theme": "1.7.0",
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "lucide-react": "^0.562.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "tailwind-merge": "^3.4.0",
+        "tw-animate-css": "^1.4.0"
+    },
+    "devDependencies": {
+        "@adobe/ccweb-add-on-scripts": "^3.5.0",
+        "@tailwindcss/postcss": "^4.1.18",
+        "@types/adobe__ccweb-add-on-sdk": "^1.3.0",
+        "@types/react": "18.2.21",
+        "@types/react-dom": "18.2.7",
+        "copy-webpack-plugin": "11.0.0",
+        "css-loader": "^6.11.0",
+        "html-webpack-plugin": "5.5.3",
+        "postcss": "^8.5.6",
+        "postcss-loader": "^8.2.0",
+        "style-loader": "^3.3.4",
+        "tailwindcss": "^4.1.18",
+        "ts-loader": "9.5.1",
+        "typescript": "5.3.2",
+        "webpack": "5.98.0",
+        "webpack-cli": "6.0.1"
+    }
+}
