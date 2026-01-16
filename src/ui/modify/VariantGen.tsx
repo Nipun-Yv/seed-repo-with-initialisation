@@ -216,7 +216,7 @@ const VariantGen = ({ addOnUISdk, sandboxProxy ,store}: { addOnUISdk: AddOnSDKAP
         return (
             <Theme system="express" scale="medium" color="light" className="h-full">
                 <div className="flex flex-col h-full w-full bg-[#FAFAFA] text-slate-900">
-                    <Header />
+                    {/* <Header /> */}
                     <div className="flex-1 flex flex-col p-4 overflow-hidden">
                         <CanvasToolbar 
                             onUndo={handleUndo}

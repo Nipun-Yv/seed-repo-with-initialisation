@@ -22,7 +22,7 @@ export const ActionFooter: React.FC<ActionFooterProps> = ({
     return (
         <div className="p-4 bg-white border-t border-slate-200 space-y-3">
             {/* Primary Action */}
-            <button 
+            {/* <button 
                 onClick={onExport} 
                 className="w-full flex items-center justify-center gap-2 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-md font-bold text-sm active:scale-[0.98]"
             >
@@ -30,7 +30,7 @@ export const ActionFooter: React.FC<ActionFooterProps> = ({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
                 Add to Express
-            </button>
+            </button> */}
 
             {/* AI Variant Button */}
             <button 
