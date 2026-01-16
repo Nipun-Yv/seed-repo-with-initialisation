@@ -77,17 +77,9 @@ const BrandSearch = () => {
   };
 
   return (
-    <div className="flex flex-col h-full w-full overflow-auto bg-gradient-to-b from-slate-50 to-white">
-      {/* Header */}
-      <div className="px-3 pt-3 pb-1">
-        <h1 className="text-sm font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
-          Brand Search
-        </h1>
-        <p className="text-[10px] text-slate-400">Sketch or upload to find similar brands</p>
-      </div>
-
+    <div className="flex flex-col h-full w-full overflow-hidden bg-[#FAFAFA]">
       {/* Canvas Section */}
-      <div className="flex flex-col px-3 gap-2 flex-1">
+      <div className="flex flex-col p-4 gap-3 flex-1 min-h-0">
         <CanvasToolbar 
           onUndo={handleUndo}
           onRedo={handleRedo}

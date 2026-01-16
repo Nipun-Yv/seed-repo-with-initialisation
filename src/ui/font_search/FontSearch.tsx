@@ -132,13 +132,27 @@ const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
                     <SketchCanvas canvasRef={canvasRef} backgroundImageUrl={backgroundImageUrl} />
                 </div>
 
-            <button 
-                onClick={handleSearch}
-                disabled={loading}
-                className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold"
-            >
-                {loading ? "Analyzing..." : "Search Fonts"}
-            </button>
+                <button 
+                    onClick={handleSearch}
+                    disabled={loading}
+                    className={`flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition-all shadow-md active:scale-[0.98] ${
+                        loading ? 'opacity-70 cursor-not-allowed' : ''
+                    }`}
+                >
+                    {loading ? (
+                        <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <span>Analyzing...</span>
+                        </>
+                    ) : (
+                        <>
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
+                            </svg>
+                            <span>Search Fonts</span>
+                        </>
+                    )}
+                </button>
 
                 {results && (
                     <FontVariantsList
