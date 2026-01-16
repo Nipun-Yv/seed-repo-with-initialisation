@@ -63,7 +63,11 @@ module.exports = {
                     {
                         loader: "ts-loader",
                         options: {
-                            configFile: path.resolve(sandboxPath, "tsconfig.json")
+                            configFile: path.resolve(sandboxPath, "tsconfig.json"),
+                            transpileOnly: false,
+                            compilerOptions: {
+                                skipLibCheck: true
+                            }
                         }
                     }
                 ],
