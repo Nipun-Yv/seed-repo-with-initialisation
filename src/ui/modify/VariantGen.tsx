@@ -163,6 +163,49 @@ const VariantGen = ({ addOnUISdk, sandboxProxy, store}: { addOnUISdk: AddOnSDKAP
         return new Blob([byteArray], { type: mimeType });
     };
 
+    const resizeImageBlob = async (blob: Blob, targetWidth: number = 300): Promise<Blob> => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            const url = URL.createObjectURL(blob);
+            
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                
+                // Calculate height maintaining aspect ratio
+                const width = targetWidth;
+                const height = (img.height / img.width) * targetWidth;
+                
+                // Create canvas and resize
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                
+                if (!ctx) {
+                    reject(new Error('Could not get canvas context'));
+                    return;
+                }
+                
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                canvas.toBlob((resizedBlob) => {
+                    if (resizedBlob) {
+                        resolve(resizedBlob);
+                    } else {
+                        reject(new Error('Failed to resize image'));
+                    }
+                }, blob.type || 'image/jpeg', 0.9);
+            };
+            
+            img.onerror = () => {
+                URL.revokeObjectURL(url);
+                reject(new Error('Failed to load image'));
+            };
+            
+            img.src = url;
+        });
+    };
+
     // Enable drag and drop for variant images
     useEffect(() => {
         if (!results || !addOnUISdk) return;
@@ -181,9 +224,10 @@ const VariantGen = ({ addOnUISdk, sandboxProxy, store}: { addOnUISdk: AddOnSDKAP
                             return new URL(`data:image/jpeg;base64,${results.original_image}`);
                         },
                         completionCallback: async (element: HTMLElement) => {
-                            // Convert base64 to blob
+                            // Convert base64 to blob and resize to fixed 300px width
                             const blob = base64ToBlob(results.original_image, 'image/jpeg');
-                            return [{ blob }];
+                            const resizedBlob = await resizeImageBlob(blob, 300);
+                            return [{ blob: resizedBlob }];
                         },
                     });
                 } catch (error) {
@@ -205,9 +249,10 @@ const VariantGen = ({ addOnUISdk, sandboxProxy, store}: { addOnUISdk: AddOnSDKAP
                                 return new URL(`data:image/jpeg;base64,${variation}`);
                             },
                             completionCallback: async (element: HTMLElement) => {
-                                // Convert base64 to blob
+                                // Convert base64 to blob and resize to fixed 300px width
                                 const blob = base64ToBlob(variation, 'image/jpeg');
-                                return [{ blob }];
+                                const resizedBlob = await resizeImageBlob(blob, 300);
+                                return [{ blob: resizedBlob }];
                             },
                         });
                     } catch (error) {
