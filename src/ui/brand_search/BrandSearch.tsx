@@ -1,68 +1,110 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import { ReactSketchCanvasRef } from 'react-sketch-canvas';
 import { CanvasToolbar } from './components/CanvasToolbar';
 import { SketchCanvas } from './components/SketchCanvas';
-import { SearchResults } from './components/SearchResults';
-import { Button } from '../../../components/ui/button';
-import { useSketchSearch } from './hooks/useSketchSearch';
+import { FindSimilar } from './components/FindSimilar';
+import { SearchResponse } from './types';
 
 const BrandSearch = () => {
   const canvasRef = useRef<ReactSketchCanvasRef>(null);
-  const { results, isLoading, error, handleSearch } = useSketchSearch();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [results, setResults] = useState<SearchResponse | null>(null);
 
-  useEffect(() => {
-    console.log('BrandSearch component mounted');
-  }, []);
-
-  const handleUndo = () => {
-    console.log('Undo action triggered');
-    canvasRef.current?.undo();
-  };
-  const handleRedo = () => {
-    console.log('Redo action triggered');
-    canvasRef.current?.redo();
-  };
-  const handleClear = () => {
-    console.log('Clear canvas action triggered');
-    canvasRef.current?.clearCanvas();
+  const handleUpload = (files: FileList) => {
+    console.log('Uploaded files:', files);
   };
 
-  const handleSearchClick = async () => {
-    console.log('Search button clicked, sending sketch to backend...');
-    await handleSearch(canvasRef);
-  };
+  const handleUndo = () => canvasRef.current?.undo();
+  const handleRedo = () => canvasRef.current?.redo();
+  const handleClear = () => canvasRef.current?.clearCanvas();
 
-  useEffect(() => {
-    if (results.length > 0) {
-      console.log('Search results updated:', results);
+  const handleFindSimilar = async () => {
+    console.log('[BrandSearch] handleFindSimilar called');
+    setLoading(true);
+    setError(null);
+    setResults(null);
+    
+    try {
+      console.log('[BrandSearch] Checking canvas ref...');
+      if (!canvasRef.current) {
+        console.warn('[BrandSearch] Canvas ref is not available');
+        setError('Please draw something on the canvas first');
+        setLoading(false);
+        return;
+      }
+
+      console.log('[BrandSearch] Exporting canvas to image...');
+      const dataUrl = await canvasRef.current.exportImage('png');
+      console.log('[BrandSearch] Canvas exported, data URL length:', dataUrl.length);
+
+      // Convert data URL to Blob
+      const arr = dataUrl.split(',');
+      const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      const imageBlob = new Blob([u8arr], { type: mime });
+      console.log('[BrandSearch] Image blob created, size:', imageBlob.size, 'bytes');
+
+      // Import and call the search API
+      const { searchBySketch } = await import('./api/VisualSearch');
+      console.log('[BrandSearch] Calling searchBySketch API...');
+      
+      const response = await searchBySketch(imageBlob);
+      console.log('[BrandSearch] API response received:', response);
+      console.log('[BrandSearch] Response type:', typeof response);
+      console.log('[BrandSearch] Response keys:', Object.keys(response || {}));
+      console.log('[BrandSearch] Similar images:', response.similar_images);
+      console.log('[BrandSearch] Similar images length:', response.similar_images?.length);
+      
+      setResults(response);
+      console.log('[BrandSearch] Results state updated');
+    } catch (err) {
+      console.error('[BrandSearch] Error in handleFindSimilar:', err);
+      setError(err instanceof Error ? err.message : 'Failed to find similar images');
+    } finally {
+      setLoading(false);
+      console.log('[BrandSearch] Loading set to false');
     }
-  }, [results]);
+  };
+
+  const handleClearResults = () => {
+    setResults(null);
+  };
 
   return (
-    <div className="flex flex-col h-full w-full p-4 overflow-hidden">
-      <CanvasToolbar 
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-        onClear={handleClear}
-      />
-      <Button 
-        onClick={handleSearchClick} 
-        disabled={isLoading}
-        className="mt-2 mb-2"
-      >
-        {isLoading ? 'Searching...' : 'Search'}
-      </Button>
-      {error && (
-        <div className="text-red-500 text-sm mb-2 p-2 bg-red-50 rounded">
-          {error}
-        </div>
-      )}
-      <div className="flex-1 overflow-y-auto">
-        <div className="mb-4">
-          <SketchCanvas canvasRef={canvasRef} />
-        </div>
-        <SearchResults results={results} />
+    <div className="flex flex-col h-full w-full overflow-auto bg-gradient-to-b from-slate-50 to-white">
+      {/* Header */}
+      <div className="px-3 pt-3 pb-1">
+        <h1 className="text-sm font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+          Brand Search
+        </h1>
+        <p className="text-[10px] text-slate-400">Sketch or upload to find similar brands</p>
       </div>
+
+      {/* Canvas Section */}
+      <div className="flex flex-col px-3 gap-2 flex-1">
+        <CanvasToolbar 
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          onClear={handleClear}
+          onUpload={handleUpload}
+        />
+        <SketchCanvas canvasRef={canvasRef} />
+      </div>
+      
+      {/* Search Section */}
+      <FindSimilar 
+        onFindSimilar={handleFindSimilar}
+        loading={loading}
+        error={error}
+        results={results}
+        onClearResults={handleClearResults}
+      />
     </div>
   );
 };

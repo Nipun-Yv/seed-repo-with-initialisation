@@ -38,7 +38,7 @@ const App = ({
                 </div>
 
                 {/* Main Navigation - Tab Style */}
-                <nav className="flex w-full bg-white border-b border-slate-200 relative z-10">
+                <nav className="flex w-full bg-white border-b border-slate-200">
                     <NavLink to="/" className={navLinkClass} end title="Variant Gen">
                         <Sparkles size={18} />
                         <span className="text-[10px] mt-1 font-medium">Variants</span>
@@ -56,7 +56,7 @@ const App = ({
                 </nav>
 
                 {/* Scrollable Content Area */}
-                <main className="flex-1 overflow-y-auto custom-scrollbar relative z-20">
+                <main className="flex-1 overflow-y-auto custom-scrollbar">
                     <Routes>
                         <Route
                             path="/"
