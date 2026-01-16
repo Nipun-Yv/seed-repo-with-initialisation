@@ -19,12 +19,12 @@ export const VariantsList: React.FC<VariantsListProps> = ({ results, onClear }) 
                 </button>
             </div>
             
-            {/* Scrollable Variant Container */}
-            <div className="flex gap-2 overflow-x-auto pb-2">
+            {/* Scrollable Variant Container - Grid 3 columns */}
+            <div className="grid grid-cols-3 gap-2 overflow-y-auto max-h-64 pb-2 pr-1">
                 {/* Original Image */}
                 <div 
                     id="variant-container-original"
-                    className="flex-shrink-0 w-24 h-24 rounded-lg border-2 border-indigo-300 overflow-hidden bg-white shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
+                    className="aspect-square rounded-lg border-2 border-indigo-300 overflow-hidden bg-white shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
                 >
                     <img 
                         src={`data:image/jpeg;base64,${results.original_image}`}
@@ -39,7 +39,7 @@ export const VariantsList: React.FC<VariantsListProps> = ({ results, onClear }) 
                     <div 
                         id={`variant-container-${index}`}
                         key={index}
-                        className="flex-shrink-0 w-24 h-24 rounded-lg border-2 border-slate-200 overflow-hidden bg-white shadow-sm cursor-grab active:cursor-grabbing hover:border-indigo-300 hover:shadow-md transition-all"
+                        className="aspect-square rounded-lg border-2 border-slate-200 overflow-hidden bg-white shadow-sm cursor-grab active:cursor-grabbing hover:border-indigo-300 hover:shadow-md transition-all"
                     >
                         <img 
                             src={`data:image/jpeg;base64,${variation}`}
