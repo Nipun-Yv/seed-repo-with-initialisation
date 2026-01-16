@@ -10,4 +10,5 @@ export interface DocumentSandboxApi {
         dimensions: { width: number; height: number },
         segments: Array<{ imageBase64: string; x: number; y: number; width: number; height: number; center_x: number; center_y: number }>
     ): Promise<void>;
+    applyFontToText(fontFamily: string): Promise<{ success: boolean; message: string; fontFamily?: string }>;
 }
