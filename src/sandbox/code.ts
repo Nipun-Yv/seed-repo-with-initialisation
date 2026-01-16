@@ -1,5 +1,5 @@
 import addOnSandboxSdk from "add-on-sdk-document-sandbox";
-import { editor, colorUtils, EditorEvent, constants } from "express-document-sdk";
+import { editor, colorUtils, EditorEvent, constants, fonts } from "express-document-sdk";
 import { DocumentSandboxApi } from "../models/DocumentSandboxApi";
 
 // Get the document sandbox runtime.
@@ -65,6 +65,40 @@ function start(): void {
             } catch (error) {
                 console.error('Error getting selected image:', error);
                 return null;
+            }
+        },
+        
+        applyFontToSelectedText: async (fontPostscriptName: string) => {
+            try {
+                const selection = editor.context.selection;
+                
+                // Check if we have exactly one text node selected
+                if (selection.length !== 1 || selection[0].type !== constants.SceneNodeType.text) {
+                    console.warn('Please select a text node to apply the font');
+                    return false;
+                }
+                const textNode = selection[0] as any;
+                
+                // Get the font by PostScript name
+                const font = await fonts.fromPostscriptName(fontPostscriptName);
+                
+                if (!font) {
+                    console.warn(`Font with PostScript name "${fontPostscriptName}" is not available for editing`);
+                    return false;
+                }
+                
+                // Apply the font to all text using queueAsyncEdit
+                await editor.queueAsyncEdit(() => {
+                    // @ts-expect-error - fullContent exists on TextNode at runtime
+                    const contentModel = textNode.fullContent;
+                    // Apply font to the entire text content
+                    contentModel.applyCharacterStyles({ font: font });
+                });
+                
+                return true;
+            } catch (error) {
+                console.error('Error applying font to text:', error);
+                return false;
             }
         }
     };

@@ -4,10 +4,11 @@ import { FontMatch } from '../types';
 interface FontResultsListProps {
     matches: FontMatch[];
     identifiedLetter: string;
-    onSelectFont: (font: FontMatch) => void;
+    onSelectFont: (font: FontMatch) => void | Promise<void>;
+    isApplying?: boolean;
 }
 
-export const FontResultsList: React.FC<FontResultsListProps> = ({ matches, identifiedLetter, onSelectFont }) => {
+export const FontResultsList: React.FC<FontResultsListProps> = ({ matches, identifiedLetter, onSelectFont, isApplying = false }) => {
     return (
         <div className="flex flex-col gap-3 mt-4">
             <div className="flex items-center justify-between px-1">
@@ -20,8 +21,8 @@ export const FontResultsList: React.FC<FontResultsListProps> = ({ matches, ident
             {matches.map((match, index) => (
                 <div 
                     key={match.fontName}
-                    className="group relative bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:border-blue-400 transition-all cursor-pointer"
-                    onClick={() => onSelectFont(match)}
+                    className={`group relative bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:border-blue-400 transition-all ${isApplying ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                    onClick={() => !isApplying && onSelectFont(match)}
                 >
                     <div className="flex justify-between items-start mb-2">
                         <div>
@@ -48,8 +49,11 @@ export const FontResultsList: React.FC<FontResultsListProps> = ({ matches, ident
                     </div>
 
                     <div className="mt-3 flex justify-end">
-                        <button className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors">
-                            Apply to Design →
+                        <button 
+                            className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors disabled:opacity-50"
+                            disabled={isApplying}
+                        >
+                            {isApplying ? "Applying..." : "Apply to Design →"}
                         </button>
                     </div>
                 </div>
