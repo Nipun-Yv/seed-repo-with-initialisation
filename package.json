@@ -6,7 +6,9 @@
         "clean": "ccweb-add-on-scripts clean",
         "build": "ccweb-add-on-scripts build --use webpack",
         "start": "ccweb-add-on-scripts start --use webpack",
-        "package": "ccweb-add-on-scripts package --use webpack"
+        "package": "ccweb-add-on-scripts package --use webpack",
+        "generate-cert": "node scripts/generate-certificate.js",
+        "generate-cert:ps1": "powershell -ExecutionPolicy Bypass -File scripts/generate-certificate.ps1"
     },
     "keywords": [
         "Adobe",
@@ -46,6 +48,7 @@
         "ts-loader": "9.5.1",
         "typescript": "5.3.2",
         "webpack": "5.98.0",
-        "webpack-cli": "6.0.1"
+        "webpack-cli": "6.0.1",
+        "selfsigned": "^2.1.1"
     }
 }
