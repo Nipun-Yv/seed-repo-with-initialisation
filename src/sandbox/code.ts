@@ -30,50 +30,7 @@ function start(): void {
             const insertionParent = editor.context.insertionParent;
             insertionParent.children.append(rectangle);
         },
-        renderSvgPaths: (paths: Array<{ pathData: string; translation: { x: number; y: number }; fillColor: string }>) => {
-            if (!paths || paths.length === 0) {
-                console.warn("No SVG paths provided");
-                return;
-            }
-
-            // Create a group to hold all the paths
-            const group = editor.createGroup();
-            
-            // Create a path node for each SVG path object
-            const pathNodes = paths.map((pathObj, index) => {
-                try {
-                    const pathNode = editor.createPath(pathObj.pathData);
-                    
-                    // Parse hex color to RGB
-                    const hexColor = pathObj.fillColor.replace('#', '');
-                    const r = parseInt(hexColor.substring(0, 2), 16) / 255;
-                    const g = parseInt(hexColor.substring(2, 4), 16) / 255;
-                    const b = parseInt(hexColor.substring(4, 6), 16) / 255;
-                    const color = { red: r, green: g, blue: b, alpha: 1 };
-                    
-                    // Apply the fill color from the payload
-                    pathNode.fill = editor.makeColorFill(color);
-                    
-                    // Use the translation from the payload
-                    pathNode.translation = pathObj.translation;
-                    
-                    return pathNode;
-                } catch (error) {
-                    console.error(`Error creating path at index ${index}:`, error);
-                    return null;
-                }
-            }).filter((node): node is NonNullable<typeof node> => node !== null);
-
-            // Add all paths to the group
-            if (pathNodes.length > 0) {
-                group.children.append(...pathNodes);
-                
-                // Add the group to the document
-                const insertionParent = editor.context.insertionParent;
-                insertionParent.children.append(group);
-            }
-        },
-        
+    
         getSelectionState: async () => {
             const selection = editor.context.selection;
             const isImage = selection.length === 1 && selection[0].type === constants.SceneNodeType.mediaContainer;
