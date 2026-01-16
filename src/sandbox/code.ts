@@ -1,5 +1,5 @@
 import addOnSandboxSdk from "add-on-sdk-document-sandbox";
-import { editor, colorUtils, fonts } from "express-document-sdk";
+import { editor, colorUtils, fonts, EditorEvent, constants} from "express-document-sdk";
 import { DocumentSandboxApi } from "../models/DocumentSandboxApi";
 
 // Get the document sandbox runtime.
@@ -237,75 +237,6 @@ function start(): void {
                     console.warn("No valid image containers to add");
                 }
             });
-        },
-        applyFontToText: async (fontFamily: string) => {
-            /**
-             * Apply a font to the currently selected text element(s).
-             * @param fontFamily - The font family name (e.g., "Arial", "Times New Roman")
-             */
-            try {
-                const selection = editor.context.selection;
-                if (selection.length === 0) {
-                    console.warn("No text element selected");
-                    return { success: false, message: "Please select a text element first" };
-                }
-
-                // Try to find the font by family name
-                // Note: We need to search through available fonts or use PostScript name
-                // For now, we'll try common PostScript name patterns
-                const fontPostScriptNames = [
-                    fontFamily.replace(/\s+/g, ""), // Remove spaces
-                    fontFamily.replace(/\s+/g, "-"), // Replace spaces with hyphens
-                    `${fontFamily.replace(/\s+/g, "")}-Regular`,
-                    `${fontFamily.replace(/\s+/g, "-")}-Regular`,
-                ];
-
-                let selectedFont = null;
-                for (const psName of fontPostScriptNames) {
-                    selectedFont = await fonts.fromPostscriptName(psName);
-                    if (selectedFont && selectedFont.availableForEditing) {
-                        break;
-                    }
-                }
-
-                // If no font found, try to get all available fonts and match by family name
-                if (!selectedFont || !selectedFont.availableForEditing) {
-                    // Fallback: try to find by family name in available fonts
-                    // This is a simplified approach - in production, you'd want a more robust font matching
-                    console.warn(`Font "${fontFamily}" not found. Using default font.`);
-                    selectedFont = await fonts.fromPostscriptName("SourceSans3-Regular");
-                }
-
-                if (!selectedFont || !selectedFont.availableForEditing) {
-                    return { success: false, message: `Font "${fontFamily}" is not available` };
-                }
-
-                // Apply font to all selected text elements
-                await editor.queueAsyncEdit(() => {
-                    selection.forEach((textNode) => {
-                        if (textNode.type === "text") {
-                            const contentModel = textNode.fullContent;
-                            const existingStyles = contentModel.characterStyleRanges;
-                            
-                            // Apply font to all character style ranges
-                            existingStyles.forEach((style) => {
-                                style.font = selectedFont;
-                            });
-                            
-                            contentModel.characterStyleRanges = existingStyles;
-                        }
-                    });
-                });
-
-                return { 
-                    success: true, 
-                    message: `Font "${selectedFont.family}" applied successfully`,
-                    fontFamily: selectedFont.family 
-                };
-            } catch (error) {
-                console.error("Error applying font:", error);
-                return { success: false, message: `Error applying font: ${error}` };
-            }
         }
     };
 

@@ -63,7 +63,7 @@ const App = ({
                             element={<VariantGen addOnUISdk={addOnUISdk} sandboxProxy={sandboxProxy} store={store} />}
                         />
                         <Route path="/brand-search" element={<BrandSearch />} />
-                        <Route path="/font-search" element={<FontSearch sandboxProxy={sandboxProxy} />} />
+                        <Route path="/font-search" element={<FontSearch />} />
                         <Route
                             path="*"
                             element={<VariantGen addOnUISdk={addOnUISdk} sandboxProxy={sandboxProxy} store={store} />}

@@ -17,14 +17,20 @@ import { SketchCanvas } from "./components/SketchCanvas";
 import { ActionFooter } from "./components/ActionFooter";
 
 const API_BASE_URL = "https://localhost:8443";
-const BACKGROUND_IMAGE_URL = "https://m.media-amazon.com/images/I/71b7sbSODzL.jpg";
+const DEFAULT_BACKGROUND_IMAGE_URL = "";
 
-const VariantGen = ({ addOnUISdk, sandboxProxy ,store}: { addOnUISdk: AddOnSDKAPI; sandboxProxy: DocumentSandboxApi,
+const VariantGen = ({ addOnUISdk, sandboxProxy, store}: { addOnUISdk: AddOnSDKAPI; sandboxProxy: DocumentSandboxApi,
     store:ClientStorage
 }) => {
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState<DesignResult | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [hasSelection, setHasSelection] = useState(false);
+    const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | undefined>(DEFAULT_BACKGROUND_IMAGE_URL);
+    const [loadingBackground, setLoadingBackground] = useState(false);
+    const [syncSelectionEnabled, setSyncSelectionEnabled] = useState(false);
+    const [brushColor, setBrushColor] = useState("#1E293B");
+    const [userPrompt, setUserPrompt] = useState<string>("");
     const canvasRef = useRef<ReactSketchCanvasRef>(null);
   
   
@@ -32,6 +38,7 @@ const VariantGen = ({ addOnUISdk, sandboxProxy ,store}: { addOnUISdk: AddOnSDKAP
     const handleUndo = () => canvasRef.current?.undo();
     const handleRedo = () => canvasRef.current?.redo();
     const handleClear = () => canvasRef.current?.clearCanvas();
+    const handleClearImage = () => setBackgroundImageUrl(undefined);
     
     const handleExport = async () => {
       if (canvasRef.current) {
@@ -94,7 +101,7 @@ const VariantGen = ({ addOnUISdk, sandboxProxy ,store}: { addOnUISdk: AddOnSDKAP
         try {
             const dataUrl = await canvasRef.current.exportImage("png");
             const response = await fetch(dataUrl);
-            const backgroundResponse = await fetch(BACKGROUND_IMAGE_URL);
+            const backgroundResponse = await fetch(backgroundImageUrl);
             
             const overlayBlob = await response.blob();
             const backgroundBlob = await backgroundResponse.blob();
@@ -106,6 +113,9 @@ const VariantGen = ({ addOnUISdk, sandboxProxy ,store}: { addOnUISdk: AddOnSDKAP
 
             const formData = new FormData();
             formData.append("file", file);
+            if (userPrompt.trim()) {
+                formData.append("user_prompt", userPrompt.trim());
+            }
 
             const apiResponse = await fetch(`${API_BASE_URL}/generate-designs`, {
                 method: "POST",
@@ -153,6 +163,49 @@ const VariantGen = ({ addOnUISdk, sandboxProxy ,store}: { addOnUISdk: AddOnSDKAP
         return new Blob([byteArray], { type: mimeType });
     };
 
+    const resizeImageBlob = async (blob: Blob, targetWidth: number = 300): Promise<Blob> => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            const url = URL.createObjectURL(blob);
+            
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                
+                // Calculate height maintaining aspect ratio
+                const width = targetWidth;
+                const height = (img.height / img.width) * targetWidth;
+                
+                // Create canvas and resize
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                
+                if (!ctx) {
+                    reject(new Error('Could not get canvas context'));
+                    return;
+                }
+                
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                canvas.toBlob((resizedBlob) => {
+                    if (resizedBlob) {
+                        resolve(resizedBlob);
+                    } else {
+                        reject(new Error('Failed to resize image'));
+                    }
+                }, blob.type || 'image/jpeg', 0.9);
+            };
+            
+            img.onerror = () => {
+                URL.revokeObjectURL(url);
+                reject(new Error('Failed to load image'));
+            };
+            
+            img.src = url;
+        });
+    };
+
     // Enable drag and drop for variant images
     useEffect(() => {
         if (!results || !addOnUISdk) return;
@@ -171,9 +224,10 @@ const VariantGen = ({ addOnUISdk, sandboxProxy ,store}: { addOnUISdk: AddOnSDKAP
                             return new URL(`data:image/jpeg;base64,${results.original_image}`);
                         },
                         completionCallback: async (element: HTMLElement) => {
-                            // Convert base64 to blob
+                            // Convert base64 to blob and resize to fixed 300px width
                             const blob = base64ToBlob(results.original_image, 'image/jpeg');
-                            return [{ blob }];
+                            const resizedBlob = await resizeImageBlob(blob, 300);
+                            return [{ blob: resizedBlob }];
                         },
                     });
                 } catch (error) {
@@ -195,9 +249,10 @@ const VariantGen = ({ addOnUISdk, sandboxProxy ,store}: { addOnUISdk: AddOnSDKAP
                                 return new URL(`data:image/jpeg;base64,${variation}`);
                             },
                             completionCallback: async (element: HTMLElement) => {
-                                // Convert base64 to blob
+                                // Convert base64 to blob and resize to fixed 300px width
                                 const blob = base64ToBlob(variation, 'image/jpeg');
-                                return [{ blob }];
+                                const resizedBlob = await resizeImageBlob(blob, 300);
+                                return [{ blob: resizedBlob }];
                             },
                         });
                     } catch (error) {
@@ -213,18 +268,89 @@ const VariantGen = ({ addOnUISdk, sandboxProxy ,store}: { addOnUISdk: AddOnSDKAP
 
         return () => clearTimeout(timer);
     }, [results, addOnUISdk]);
+
+    // Poll for selection state and handle image selection
+    useEffect(() => {
+        let lastSelectedNodeId: string | undefined = undefined;
+
+        const checkSelection = async () => {
+            try {
+                const state = await sandboxProxy.getSelectionState();
+                setHasSelection(state.hasSelection);
+
+                // Only update background if sync selection is enabled
+                // If an image is selected and it's a different node than before, load it as background
+                const isNewImageSelection = syncSelectionEnabled && state.isImage && state.selectedNodeId && state.selectedNodeId !== lastSelectedNodeId;
+
+                if (isNewImageSelection) {
+                    setLoadingBackground(true);
+                    try {
+                        const imageBlob = await sandboxProxy.getSelectedImageBlob();
+                        
+                        if (imageBlob) {
+                            // Convert blob to data URL in UI where FileReader is available
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                                if (typeof reader.result === 'string') {
+                                    setBackgroundImageUrl(reader.result);
+                                }
+                                setLoadingBackground(false);
+                            };
+                            reader.onerror = () => {
+                                setLoadingBackground(false);
+                            };
+                            reader.readAsDataURL(imageBlob);
+                        } else {
+                            setLoadingBackground(false);
+                        }
+                    } catch (err) {
+                        console.error("Failed to get selected image:", err);
+                        setLoadingBackground(false);
+                    }
+                }
+
+                // Update last selected node ID (reset to undefined if no image selected)
+                lastSelectedNodeId = state.isImage ? state.selectedNodeId : undefined;
+            } catch (err) {
+                console.error("Failed to get selection state:", err);
+            }
+        };
+
+        checkSelection();
+        const interval = setInterval(checkSelection, 200);
+
+        return () => clearInterval(interval);
+    }, [sandboxProxy, syncSelectionEnabled]);
+
         return (
             <Theme system="express" scale="medium" color="light" className="h-full">
-                <div className="flex flex-col h-full w-full bg-[#FAFAFA] text-slate-900">
+                <div className="flex flex-col h-full w-full bg-[#FAFAFA] text-slate-900 relative">
+                    {/* Red dot indicator when something is selected */}
+                    {hasSelection && (
+                        <div className="absolute top-2 right-2 z-50 w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-lg" />
+                    )}
                     {/* <Header /> */}
-                    <div className="flex-1 flex flex-col p-4 overflow-hidden">
+                    <div className="flex-1 flex flex-col gap-2 p-4 overflow-hidden">
                         <CanvasToolbar 
                             onUndo={handleUndo}
                             onRedo={handleRedo}
                             onClear={handleClear}
+                            onClearImage={handleClearImage}
+                            syncSelectionEnabled={syncSelectionEnabled}
+                            onSyncSelectionToggle={setSyncSelectionEnabled}
+                            selectedColor={brushColor}
+                            onColorChange={setBrushColor}
                         />
 
-                        <SketchCanvas canvasRef={canvasRef} backgroundImageUrl={BACKGROUND_IMAGE_URL} />
+                        {loadingBackground && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-20 rounded-2xl">
+                                <div className="flex flex-col items-center gap-2">
+                                    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                                    <span className="text-sm text-slate-600">Loading background image...</span>
+                                </div>
+                            </div>
+                        )}
+                        <SketchCanvas canvasRef={canvasRef} backgroundImageUrl={backgroundImageUrl} strokeColor={brushColor} />
                     </div>
 
                     <ActionFooter
@@ -234,6 +360,8 @@ const VariantGen = ({ addOnUISdk, sandboxProxy ,store}: { addOnUISdk: AddOnSDKAP
                         error={error}
                         results={results}
                         onClearResults={() => setResults(null)}
+                        userPrompt={userPrompt}
+                        onUserPromptChange={setUserPrompt}
                     />
                 </div>
             </Theme>
