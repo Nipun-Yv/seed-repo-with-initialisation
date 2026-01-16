@@ -30,6 +30,7 @@ function start(): void {
             const insertionParent = editor.context.insertionParent;
             insertionParent.children.append(rectangle);
         },
+<<<<<<< HEAD
         renderSvgPaths: (paths: Array<{ pathData: string; translation: { x: number; y: number }; fillColor: string }>) => {
             if (!paths || paths.length === 0) {
                 console.warn("No SVG paths provided");
@@ -110,6 +111,25 @@ function start(): void {
                     return pathNode;
                 } catch (error) {
                     console.error(`Error creating path at index ${index}:`, error);
+=======
+    
+        getSelectionState: async () => {
+            const selection = editor.context.selection;
+            const isImage = selection.length === 1 && selection[0].type === constants.SceneNodeType.mediaContainer;
+            return {
+                hasSelection: selection.length > 0,
+                selectionCount: selection.length,
+                isImage: isImage,
+                selectedNodeId: selection.length > 0 ? selection[0].id : undefined
+            };
+        },
+        
+        getSelectedImageBlob: async () => {
+            try {
+                const selection = editor.context.selection;
+                
+                if (selection.length !== 1 || selection[0].type !== constants.SceneNodeType.mediaContainer) {
+>>>>>>> 5ad7f939dfe54e001c959974642ce3d96ece28f9
                     return null;
                 }
             }).filter((node): node is NonNullable<typeof node> => node !== null);
