@@ -16,7 +16,7 @@ import { CanvasToolbar } from "./components/CanvasToolbar";
 import { SketchCanvas } from "./components/SketchCanvas";
 import { ActionFooter } from "./components/ActionFooter";
 
-const API_BASE_URL = "https://localhost:8443";
+const API_BASE_URL = "https://modify.api-easy-eats-canteen.sbs";
 const DEFAULT_BACKGROUND_IMAGE_URL = "";
 
 const VariantGen = ({ addOnUISdk, sandboxProxy, store}: { addOnUISdk: AddOnSDKAPI; sandboxProxy: DocumentSandboxApi,

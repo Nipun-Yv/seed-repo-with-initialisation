@@ -74,7 +74,7 @@ const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
             formData.append("character", "A");
             formData.append("include_images", "true");
 
-            const apiResponse = await fetch("https://localhost:8443/match-font", {
+            const apiResponse = await fetch("https://modify.api-easy-eats-canteen.sbs/match-font", {
                 method: "POST",
                 body: formData
             });

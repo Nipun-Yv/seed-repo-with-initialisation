@@ -3,19 +3,34 @@ import { ReactSketchCanvas, ReactSketchCanvasRef } from "react-sketch-canvas";
 
 interface SketchCanvasProps {
     canvasRef: React.RefObject<ReactSketchCanvasRef>;
+    backgroundImage?: string | null;
 }
 
-export const SketchCanvas: React.FC<SketchCanvasProps> = ({ canvasRef }) => {
+export const SketchCanvas: React.FC<SketchCanvasProps> = ({ canvasRef, backgroundImage }) => {
     return (
         <div className="relative flex-1 min-h-[250px] bg-white rounded-lg border border-slate-200 overflow-hidden group">
+            {/* Background Image */}
+            {backgroundImage && (
+                <div 
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
+                    style={{
+                        backgroundImage: `url(${backgroundImage})`,
+                        zIndex: 0,
+                        opacity: 0.5
+                    }}
+                />
+            )}
+            
             {/* Canvas */}
             <ReactSketchCanvas
                 ref={canvasRef}
                 strokeWidth={2.5}
                 strokeColor="#1e293b"
-                canvasColor="white"
+                canvasColor={backgroundImage ? "transparent" : "white"}
                 style={{
-                    border: "none"
+                    border: "none",
+                    position: "relative",
+                    zIndex: 1
                 }}
             />
             
