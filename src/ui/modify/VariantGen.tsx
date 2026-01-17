@@ -362,6 +362,20 @@ const VariantGen = ({ addOnUISdk, sandboxProxy, store}: { addOnUISdk: AddOnSDKAP
                         onClearResults={() => setResults(null)}
                         userPrompt={userPrompt}
                         onUserPromptChange={setUserPrompt}
+                        onImageClick={async (base64Image, isOriginal) => {
+                            try {
+                                console.log(`[VariantGen] Adding ${isOriginal ? 'original' : 'variant'} image to document...`);
+                                const blob = base64ToBlob(base64Image, 'image/jpeg');
+                                const resizedBlob = await resizeImageBlob(blob, 300);
+                                await addOnUISdk.app.document.addImage(resizedBlob, {
+                                    title: isOriginal ? 'Original Image' : 'Design Variant'
+                                });
+                                console.log('[VariantGen] Image added to document successfully');
+                            } catch (err) {
+                                console.error('[VariantGen] Failed to add image to document:', err);
+                                setError(err instanceof Error ? err.message : 'Failed to add image to document');
+                            }
+                        }}
                     />
                 </div>
             </Theme>

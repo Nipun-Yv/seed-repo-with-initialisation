@@ -11,6 +11,7 @@ interface ActionFooterProps {
     onClearResults: () => void;
     userPrompt: string;
     onUserPromptChange: (prompt: string) => void;
+    onImageClick?: (base64Image: string, isOriginal: boolean) => void;
 }
 
 export const ActionFooter: React.FC<ActionFooterProps> = ({
@@ -22,6 +23,7 @@ export const ActionFooter: React.FC<ActionFooterProps> = ({
     onClearResults,
     userPrompt,
     onUserPromptChange,
+    onImageClick,
 }) => {
     return (
         <div className="bg-white border-t border-slate-200 max-h-[200px] overflow-y-auto">
@@ -83,7 +85,7 @@ export const ActionFooter: React.FC<ActionFooterProps> = ({
             )}
 
 
-            {results && <VariantsList results={results} onClear={onClearResults} />}
+            {results && <VariantsList results={results} onClear={onClearResults} onImageClick={onImageClick} />}
 
             
             {!results && (

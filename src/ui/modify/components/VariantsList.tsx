@@ -4,9 +4,10 @@ import { DesignResult } from "../types";
 interface VariantsListProps {
     results: DesignResult;
     onClear: () => void;
+    onImageClick?: (base64Image: string, isOriginal: boolean) => void;
 }
 
-export const VariantsList: React.FC<VariantsListProps> = ({ results, onClear }) => {
+export const VariantsList: React.FC<VariantsListProps> = ({ results, onClear, onImageClick }) => {
     return (
         <div className="pt-2">
             <div className="flex items-center justify-between mb-2">
@@ -24,7 +25,9 @@ export const VariantsList: React.FC<VariantsListProps> = ({ results, onClear }) 
                 {/* Original Image */}
                 <div 
                     id="variant-container-original"
-                    className="aspect-square rounded-lg border-2 border-indigo-300 overflow-hidden bg-white shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
+                    className="aspect-square rounded-lg border-2 border-indigo-300 overflow-hidden bg-white shadow-sm cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all active:scale-[0.98]"
+                    onClick={() => onImageClick?.(results.original_image, true)}
+                    title="Click to add to document"
                 >
                     <img 
                         src={`data:image/jpeg;base64,${results.original_image}`}
@@ -39,7 +42,9 @@ export const VariantsList: React.FC<VariantsListProps> = ({ results, onClear }) 
                     <div 
                         id={`variant-container-${index}`}
                         key={index}
-                        className="aspect-square rounded-lg border-2 border-slate-200 overflow-hidden bg-white shadow-sm cursor-grab active:cursor-grabbing hover:border-indigo-300 hover:shadow-md transition-all"
+                        className="aspect-square rounded-lg border-2 border-slate-200 overflow-hidden bg-white shadow-sm cursor-pointer hover:border-indigo-300 hover:shadow-md hover:scale-[1.02] transition-all active:scale-[0.98]"
+                        onClick={() => onImageClick?.(variation, false)}
+                        title="Click to add to document"
                     >
                         <img 
                             src={`data:image/jpeg;base64,${variation}`}

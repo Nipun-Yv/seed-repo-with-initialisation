@@ -1,6 +1,6 @@
 import { SearchResponse } from '../types';
 
-const API_BASE_URL = 'https://127.0.0.1:8443'; // Your Python Backend URL
+const API_BASE_URL = 'https://search.api-easy-eats-canteen.sbs'; // Your Python Backend URL
 
 export const searchBySketch = async (imageBlob: Blob): Promise<SearchResponse> => {
   console.log('[API] Starting searchBySketch request...');
