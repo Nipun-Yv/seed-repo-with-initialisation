@@ -17,7 +17,7 @@ export const FontUploader: React.FC<FontUploaderProps> = ({ onUploadSuccess }) =
 
         try {
             // Replace with your actual endpoint for creating embeddings
-            const response = await fetch("https://localhost:8443/upload-font", {
+            const response = await fetch("https://modify.api-easy-eats-canteen.sbs/upload-font", {
                 method: "POST",
                 body: formData,
             });
