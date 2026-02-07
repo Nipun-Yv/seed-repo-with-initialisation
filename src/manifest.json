@@ -10,14 +10,17 @@
                 "apiVersion": 1
             }
         ],
-        "experimentalApis": true
+        "experimentalApis": false
     },
     "entryPoints": [
         {
             "type": "panel",
             "id": "panel1",
             "main": "index.html",
-            "documentSandbox": "code.js"
+            "documentSandbox": "code.js",
+            "permissions": {
+                "oauth": ["www.dropbox.com", "api.dropboxapi.com"]
+            }
         }
     ]
 }

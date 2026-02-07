@@ -2,16 +2,17 @@ import React from "react";
 import { FontSearchResponse, FontMatch } from "../types";
 
 interface FontVariantsListProps {
-    results: FontSearchResponse;
-    onClear: () => void;
-    onSelectFont: (font: FontMatch) => void | Promise<void>;
-    isApplying?: boolean;
+  results: FontSearchResponse;
+  selectedKey: string | null; 
+  onClear: () => void;
+  onSelectFont: (font: FontMatch) => void | Promise<void>;
+  isApplying?: boolean;
 }
 
-export const FontVariantsList: React.FC<FontVariantsListProps> = ({ results, onClear, onSelectFont, isApplying = false }) => {
+export const FontVariantsList: React.FC<FontVariantsListProps> = ({ results, selectedKey,onClear, onSelectFont, isApplying = false }) => {
     return (
-        <div className="pt-2">
-            <div className="flex items-center justify-between mb-2">
+        <div className="pt-2 shrink-0">
+            <div className="flex items-center justify-between mb-2 sticky top-0 bg-[#FAFAFA] z-10 py-1">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Font Matches</span>
                 <button 
                     onClick={onClear}
@@ -21,15 +22,19 @@ export const FontVariantsList: React.FC<FontVariantsListProps> = ({ results, onC
                 </button>
             </div>
             
-            {/* Scrollable Font Container - Grid 3 columns */}
-            <div className="grid grid-cols-3 gap-2 overflow-y-auto max-h-64 pb-2 pr-1">
-                {results.matches.map((match, index) => (
+
+            <div className="grid grid-cols-3 gap-2 pb-2">
+                {results.matches.map((match, index) => {
+                const key = match.fontFamily ?? match.fontName; 
+                const isSelected = selectedKey === key;  
+                return (
                     <div 
-                        key={match.fontName}
+                        key={key}                                   
                         onClick={() => !isApplying && onSelectFont(match)}
-                        className={`aspect-square rounded-lg border-2 ${index === 0 ? 'border-indigo-300' : 'border-slate-200'} overflow-hidden bg-white shadow-sm cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all flex flex-col ${
-                            isApplying ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
+                        className={`aspect-square rounded-lg border-2 overflow-hidden bg-white shadow-sm cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all flex flex-col
+                            ${isSelected ? "border-indigo-500 ring-2 ring-indigo-200" : "border-slate-200"}  // CHANGE
+                            ${isApplying ? "opacity-50 cursor-not-allowed" : ""}
+                        `}
                     >
                         {/* Font Preview */}
                         <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-indigo-50/30 p-2 relative">
@@ -78,7 +83,7 @@ export const FontVariantsList: React.FC<FontVariantsListProps> = ({ results, onC
                             )}
                         </div>
                     </div>
-                ))}
+            )})}
             </div>
         </div>
     );

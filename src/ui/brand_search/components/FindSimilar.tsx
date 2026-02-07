@@ -84,7 +84,8 @@ export const FindSimilar: React.FC<FindSimilarProps> = ({
                     {/* Results Grid - Horizontal Layout */}
                     <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                         {results.similar_images.map((match: SimilarImage, index: number) => {
-                            const imageUrl = getImageUrl(match.filename);
+                            // Use cloudinary_url if available, otherwise fallback to getImageUrl
+                            const imageUrl = match.cloudinary_url || getImageUrl(match.filename);
                             const similarity = (match.similarity * 100).toFixed(0);
                             console.log(`[FindSimilar] Rendering image ${index + 1}: ${match.filename} from URL: ${imageUrl}`);
                             const imgProps: React.ImgHTMLAttributes<HTMLImageElement> = {

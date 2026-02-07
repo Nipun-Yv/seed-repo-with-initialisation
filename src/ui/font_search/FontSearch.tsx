@@ -3,7 +3,7 @@ import { ReactSketchCanvasRef } from "react-sketch-canvas";
 import { SketchCanvas } from './components/SketchCanvas';
 import { CanvasToolbar } from './components/CanvasToolbar';
 import { FontVariantsList } from './components/FontVariantsList';
-import { FontSearchResponse, FontMatch } from './types';
+import { FontSearchResponse } from './types';
 import { DocumentSandboxApi } from '../../models/DocumentSandboxApi';
 
 interface FontSearchProps {
@@ -11,17 +11,20 @@ interface FontSearchProps {
 }
 
 const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
+    
     const canvasRef = useRef<ReactSketchCanvasRef>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState<FontSearchResponse | null>(null);
     const [applyingFont, setApplyingFont] = useState(false);
     const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | undefined>(undefined);
+    const [selectedKey, setSelectedKey] = useState<string | null>(null);
+
 
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file || !file.type.startsWith('image/')) {
-            alert('Please select a valid image file');
+            console.log('Please select a valid image file');
             return;
         }
 
@@ -32,7 +35,7 @@ const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
             }
         };
         reader.onerror = () => {
-            alert('Failed to load image');
+            console.log('Failed to load image');
         };
         reader.readAsDataURL(file);
         
@@ -74,7 +77,7 @@ const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
             formData.append("character", "A");
             formData.append("include_images", "true");
 
-            const apiResponse = await fetch("https://modify.api-easy-eats-canteen.sbs/match-font", {
+            const apiResponse = await fetch("https://127.0.0.1:8443/font/match-font", {
                 method: "POST",
                 body: formData
             });
@@ -100,11 +103,10 @@ const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
                     postscriptName: match.postscript_name || match.postscriptName
                 }))
             };
-            
+            console.log(data)
             setResults(data);
         } catch (err) {
             console.error(err);
-            alert("Failed to search fonts. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -112,7 +114,7 @@ const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
 
     return (
         <div className="flex flex-col h-full w-full bg-[#FAFAFA] text-slate-900">
-            <div className="flex-1 flex flex-col p-4 overflow-hidden gap-2">
+            <div className="flex-1 flex flex-col p-4 min-h-0 overflow-y-auto gap-2">
                 <input
                     ref={fileInputRef}
                     type="file"
@@ -128,14 +130,14 @@ const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
                     onClearImage={backgroundImageUrl ? handleClearImage : undefined}
                 />
                 
-                <div className="h-[250px] mt-2">
+                <div className="h-[250px] flex-shrink-0 mt-2">
                     <SketchCanvas canvasRef={canvasRef} backgroundImageUrl={backgroundImageUrl} />
                 </div>
 
                 <button 
                     onClick={handleSearch}
                     disabled={loading}
-                    className={`flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition-all shadow-md active:scale-[0.98] ${
+                    className={`flex-shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition-all shadow-md active:scale-[0.98] ${
                         loading ? 'opacity-70 cursor-not-allowed' : ''
                     }`}
                 >
@@ -157,24 +159,26 @@ const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
                 {results && (
                     <FontVariantsList
                         results={results}
-                        onClear={() => setResults(null)}
+                        selectedKey={selectedKey} 
+                        onClear={() => { setResults(null); setSelectedKey(null); }}
                         onSelectFont={async (font) => {
-                            if (!font.postscriptName) {
-                                alert(`Font "${font.fontName}" does not have a PostScript name. Cannot apply font.`);
+                            setSelectedKey(font.fontFamily ?? font.fontName);
+                            if (!font.fontFamily) {
+                                console.log(`Font "${font.fontName}" does not have a PostScript name. Cannot apply font.`);
                                 return;
                             }
                             
                             setApplyingFont(true);
                             try {
-                                const success = await sandboxProxy.applyFontToSelectedText(font.postscriptName);
+                                const success = await sandboxProxy.applyFontToSelectedText(font.fontFamily);
                                 if (success) {
-                                    alert(`Font "${font.fontName}" applied successfully!`);
+                                    console.log(`Font "${font.fontName}" applied successfully!`);
                                 } else {
-                                    alert(`Failed to apply font. Please make sure you have a text node selected.`);
+                                    console.log(`Failed to apply font. Please make sure you have a text node selected.`);
                                 }
                             } catch (error) {
                                 console.error('Error applying font:', error);
-                                alert('An error occurred while applying the font.');
+                                console.log('An error occurred while applying the font.');
                             } finally {
                                 setApplyingFont(false);
                             }
@@ -184,13 +188,13 @@ const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
                 )}
 
                 {!results && (
-                    <div className="pt-2">
+                    <div className="pt-2 shrink-0">
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Font Matches</span>
                         </div>
                         
-                        {/* Scrollable Font Container - Grid 3 columns */}
-                        <div className="grid grid-cols-3 gap-2 overflow-y-auto max-h-64 pb-2 pr-1">
+                        {/* Placeholder Grid 3 columns */}
+                        <div className="grid grid-cols-3 gap-2 pb-2">
                             {[1, 2, 3].map((i) => (
                                 <div 
                                     key={i}

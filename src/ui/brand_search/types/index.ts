@@ -9,6 +9,7 @@ export interface SimilarImage {
     filename: string;
     similarity: number;
     filepath: string | null;
+    cloudinary_url?: string;
 }
 
 export interface QueryImage {

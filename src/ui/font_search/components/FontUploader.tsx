@@ -24,7 +24,7 @@ export const FontUploader: React.FC<FontUploaderProps> = ({ onUploadSuccess }) =
 
             if (response.ok) {
                 onUploadSuccess(file.name);
-                alert(`Font "${file.name}" uploaded and vectorized successfully!`);
+                console.log(`Font "${file.name}" uploaded and vectorized successfully!`);
             }
         } catch (error) {
             console.error("Upload failed:", error);

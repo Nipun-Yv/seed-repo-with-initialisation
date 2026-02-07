@@ -30,47 +30,37 @@ function start(): void {
             const insertionParent = editor.context.insertionParent;
             insertionParent.children.append(rectangle);
         },
-    
-        getSelectionState: async () => {
-            const selection = editor.context.selection;
-            const isImage = selection.length === 1 && selection[0].type === constants.SceneNodeType.mediaContainer;
-            return {
-                hasSelection: selection.length > 0,
-                selectionCount: selection.length,
-                isImage: isImage,
-                selectedNodeId: selection.length > 0 ? selection[0].id : undefined
-            };
-        },
-        
-        getSelectedImageBlob: async () => {
-            try {
-                const selection = editor.context.selection;
-                
-                if (selection.length !== 1 || selection[0].type !== constants.SceneNodeType.mediaContainer) {
-                    return null;
-                }
-                
-                const mediaContainer: any = selection[0];
-                // @ts-expect-error - mediaRectangle exists on MediaContainerNode at runtime
-                const mediaRectangle: any = mediaContainer.mediaRectangle;
-                
-                if (mediaRectangle?.type === constants.SceneNodeType.imageRectangle && 
-                    typeof mediaRectangle.fetchBitmapImage === 'function') {
-                    const bitmapImage = await mediaRectangle.fetchBitmapImage();
-                    const blob = await bitmapImage.data();
-                    return blob;
-                }
-                
-                return null;
-            } catch (error) {
-                console.error('Error getting selected image:', error);
-                return null;
-            }
-        },
-        
+        // logAvailableFontIndicesFromConstants:async (
+        // l: number, h:number
+        // ) :Promise<void> =>{
+        // const names = typeof l === "number"
+        //     ? POST_SCRIPT_NAMES.slice(l,h)
+        //     : POST_SCRIPT_NAMES;
+
+        // const availableIndices: number[] = [];
+
+        // // Probe in parallel (be mindful if your list is huge)
+        // const results = await Promise.all(
+        //     names.map((psName, idx) =>
+        //     fonts.fromPostscriptName(psName).then((font) => ({ idx, psName, font }))
+        //     )
+        // ); // fromPostscriptName is async and returns undefined when unavailable. [web:17]
+
+        // for (const r of results) {
+        //     if (r.font) {
+        //     availableIndices.push(r.idx+l);
+        //     }
+        // }
+
+        // console.log(
+        //     `Available fonts: ${availableIndices.length}/${names.length}. Indices:`,
+        //     availableIndices
+        // );
+        // },
         applyFontToSelectedText: async (fontPostscriptName: string) => {
             try {
                 const selection = editor.context.selection;
+                console.log(selection)
                 
                 // Check if we have exactly one text node selected
                 if (selection.length !== 1 || selection[0].type !== constants.SceneNodeType.text) {
@@ -100,7 +90,8 @@ function start(): void {
                 console.error('Error applying font to text:', error);
                 return false;
             }
-        }
+        },
+        
     };
 
     // Register selection change event listener
@@ -136,6 +127,9 @@ function start(): void {
             console.log("  - Show group option");
         }
     }
+    // sandbox/code.ts (your file)
+
+
 
     // Register the handler
     editor.context.on(EditorEvent.selectionChange, updatePropertiesPanel);
