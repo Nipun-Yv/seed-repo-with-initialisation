@@ -5,6 +5,7 @@ import { CanvasToolbar } from './components/CanvasToolbar';
 import { FontVariantsList } from './components/FontVariantsList';
 import { FontSearchResponse } from './types';
 import { DocumentSandboxApi } from '../../models/DocumentSandboxApi';
+import { BACKEND_API_URL } from '../../utils/constants';
 
 interface FontSearchProps {
     sandboxProxy: DocumentSandboxApi;
@@ -77,7 +78,7 @@ const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
             formData.append("character", "A");
             formData.append("include_images", "true");
 
-            const apiResponse = await fetch("https://127.0.0.1:8443/font/match-font", {
+            const apiResponse = await fetch(`${BACKEND_API_URL}/font/match-font`, {
                 method: "POST",
                 body: formData
             });
@@ -137,7 +138,7 @@ const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
                 <button 
                     onClick={handleSearch}
                     disabled={loading}
-                    className={`flex-shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition-all shadow-md active:scale-[0.98] ${
+                    className={`shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-indigo-700 text-white rounded-lg font-semibold text-sm transition-all shadow-md active:scale-[0.98] ${
                         loading ? 'opacity-70 cursor-not-allowed' : ''
                     }`}
                 >

@@ -14,9 +14,9 @@ import { CanvasToolbar } from "./components/CanvasToolbar";
 import { SketchCanvas } from "./components/SketchCanvas";
 import { ActionFooter } from "./components/ActionFooter";
 import { useNavigate } from "react-router-dom";
+import {BACKEND_API_URL} from "../../utils/constants"
 
 // const API_BASE_URL = "https://modify.api-easy-eats-canteen.sbs";
-const API_BASE_URL ="https://127.0.0.1:8443"
 const DEFAULT_BACKGROUND_IMAGE_URL = "";
 
 const VariantGen = ({ addOnUISdk,store}: { addOnUISdk: AddOnSDKAPI,
@@ -169,8 +169,7 @@ const VariantGen = ({ addOnUISdk,store}: { addOnUISdk: AddOnSDKAPI,
                 navigate("/login")
             }
 
-            console.log(`${API_BASE_URL}/generative/generate-designs`)
-            const apiResponse = await fetch(`${API_BASE_URL}/generative/generate-designs`, {
+            const apiResponse = await fetch(`${BACKEND_API_URL}/generative/generate-designs`, {
                 method: "POST",
                 headers: {
                     "X-Session-ID": sessionId
@@ -194,7 +193,7 @@ const VariantGen = ({ addOnUISdk,store}: { addOnUISdk: AddOnSDKAPI,
             setResults(data);
         } catch (err) {
             if (err instanceof TypeError && err.message.includes("fetch")) {
-                if (API_BASE_URL.startsWith("http://") && window.location.protocol === "https:") {
+                if (BACKEND_API_URL.startsWith("http://") && window.location.protocol === "https:") {
                     setError(
                         "Mixed Content Error: The frontend is on HTTPS but the backend is on HTTP."
                     );

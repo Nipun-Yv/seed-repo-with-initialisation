@@ -3,8 +3,7 @@ import React, { createContext, useContext, useState, useEffect, PropsWithChildre
 import { ClientStorage, AddOnSDKAPI } from "https://new.express.adobe.com/static/add-on-sdk/sdk.js";
 
 import { generateCodeChallenge,generateRandomString,base64URLEncode } from "../utils/pkce";
-const BACKEND_URL = "https://127.0.0.1:8443";
-
+import { BACKEND_API_URL } from "../utils/constants";
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -46,7 +45,7 @@ export const AuthProvider = ({ store, children, addOnUISdk }: AuthProviderProps)
     };
 
     const verifySession = async (sessionId: string) => {
-        const response = await fetch(`${BACKEND_URL}/api/auth/session?session_id=${sessionId}`);
+        const response = await fetch(`${BACKEND_API_URL}/api/auth/session?session_id=${sessionId}`);
         
         if (!response.ok) {
             throw new Error('Session verification failed');
@@ -71,7 +70,7 @@ export const AuthProvider = ({ store, children, addOnUISdk }: AuthProviderProps)
             await store.setItem("pkce_code_verifier", codeVerifier);
             await store.setItem("oauth_state", state);
             
-            const registerResponse = await fetch(`${BACKEND_URL}/api/auth/register-state`, {
+            const registerResponse = await fetch(`${BACKEND_API_URL}/api/auth/register-state`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ state })
@@ -101,7 +100,7 @@ export const AuthProvider = ({ store, children, addOnUISdk }: AuthProviderProps)
             
             console.log('Exchanging code for token...');
             
-            const tokenResponse = await fetch(`${BACKEND_URL}/api/auth/dropbox/exchange`, {
+            const tokenResponse = await fetch(`${BACKEND_API_URL}/api/auth/dropbox/exchange`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -145,7 +144,7 @@ export const AuthProvider = ({ store, children, addOnUISdk }: AuthProviderProps)
             const sessionId = await store.getItem("session_id");
             
             if (sessionId) {
-                await fetch(`${BACKEND_URL}/api/auth/logout?session_id=${sessionId}`, {
+                await fetch(`${BACKEND_API_URL}/api/auth/logout?session_id=${sessionId}`, {
                     method: 'POST'
                 });
             }
