@@ -51,11 +51,11 @@ const Login = () => {
         <div className="flex items-center justify-center min-h-screen bg-slate-50 p-4">
             <div className="w-full max-w-md">
                 <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-                    <div className="flex items-center justify-center mb-6">
+                    {/* <div className="flex items-center justify-center mb-6">
                         <div className="bg-blue-600 p-3 rounded-lg">
                             <LogIn size={24} className="text-white" />
                         </div>
-                    </div>
+                    </div> */}
                     
                     <h2 className="text-xl font-bold text-center mb-2">Welcome Back</h2>
                     <p className="text-sm text-slate-500 text-center mb-6">

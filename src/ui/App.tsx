@@ -38,23 +38,6 @@ const AppContent = ({
         <div className="flex flex-col h-screen bg-white text-slate-900 overflow-hidden">
             {isAuthenticated && (
                 <>
-                    <div className="px-4 py-3 flex items-center justify-between border-b border-slate-100">
-                        <div className="flex items-center gap-2">
-                            <div className="bg-blue-600 p-1 rounded-md">
-                                <LayoutDashboard size={14} className="text-white" />
-                            </div>
-                            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                                Design Workspace
-                            </span>
-                        </div>
-                        <button
-                            onClick={handleLogout}
-                            className="p-1.5 hover:bg-slate-100 rounded-md transition-colors"
-                            title="Logout"
-                        >
-                            <LogOut size={14} className="text-slate-500" />
-                        </button>
-                    </div>
 
                     <nav className="flex w-full bg-white border-b border-slate-200">
                         <NavLink to="/" className={navLinkClass} end title="Variant Gen">
@@ -71,6 +54,14 @@ const AppContent = ({
                             <Type size={18} />
                             <span className="text-[10px] mt-1 font-medium">Fonts</span>
                         </NavLink>
+                        <button
+                            onClick={handleLogout}
+                            className="flex flex-col items-center justify-center flex-1 py-2 px-1 bg-blue-600 text-white"
+                            title="Logout"
+                        >
+                            <LogOut size={18} />
+                            <span className="text-[10px] mt-1 font-medium ">Log Out</span>
+                        </button>
                     </nav>
                 </>
             )}

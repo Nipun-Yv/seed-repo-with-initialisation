@@ -9,7 +9,7 @@ interface SketchCanvasProps {
 
 export const SketchCanvas: React.FC<SketchCanvasProps> = ({ canvasRef, backgroundImageUrl, strokeColor = "#1E293B" }) => {
     return (
-        <div className="flex-1 relative group min-h-[200px]">
+        <div className="flex-1 relative group">
             <div 
                 className="h-full w-full rounded-2xl border-2 border-slate-200 shadow-inner overflow-hidden relative z-10"
                 style={{

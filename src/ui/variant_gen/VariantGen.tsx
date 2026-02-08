@@ -30,6 +30,37 @@ const VariantGen = ({ addOnUISdk,store}: { addOnUISdk: AddOnSDKAPI,
     const [userPrompt, setUserPrompt] = useState<string>("");
     const canvasRef = useRef<ReactSketchCanvasRef>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [searchesRemaining, setSearchesRemaining] = useState<number | null>(
+        null,
+      );
+      const [quotaLoading, setQuotaLoading] = useState(false);
+      useEffect(() => {
+        const fetchQuota = async () => {
+          try {
+            setQuotaLoading(true);
+            const sessionId = (await store.getItem("session_id")) as string;
+            if (!sessionId){
+                navigate("/login")
+            }
+    
+            const res = await fetch(`${BACKEND_API_URL}/generative/quota`, {
+              method: "GET",
+              headers: { "X-Session-ID": sessionId },
+            });
+    
+            if (!res.ok) throw new Error(`Quota API error: ${res.status}`);
+    
+            const data = await res.json();
+            setSearchesRemaining(data.limit - data.used);
+          } catch (e) {
+            console.error(e);
+            setSearchesRemaining(null);
+          } finally {
+            setQuotaLoading(false);
+          }
+        };
+        fetchQuota()
+      }, [results]);
   
     const handleUndo = () => canvasRef.current?.undo();
     const handleRedo = () => canvasRef.current?.redo();
@@ -195,7 +226,7 @@ const VariantGen = ({ addOnUISdk,store}: { addOnUISdk: AddOnSDKAPI,
                         </div>
                     )}
                     
-                    <div className="flex-1 flex flex-col gap-2 p-4 min-h-0 overflow-y-auto">
+                    <div className="flex flex-col gap-2 p-4 min-h-0 overflow-y-auto h-70">
                         <CanvasToolbar 
                             onUndo={handleUndo}
                             onRedo={handleRedo}
@@ -205,12 +236,14 @@ const VariantGen = ({ addOnUISdk,store}: { addOnUISdk: AddOnSDKAPI,
                             selectedColor={brushColor}
                             onColorChange={setBrushColor}
                         />
-
                         <SketchCanvas canvasRef={canvasRef} backgroundImageUrl={backgroundImageUrl} strokeColor={brushColor} />
+        
                     </div>
 
                     <ActionFooter
-                        onExport={handleExport}
+                        searchesRemaining={searchesRemaining}
+                        quotaLoading={quotaLoading}
+
                         onGenerateVariants={handleGenerateVariants}
                         loading={loading}
                         error={error}
@@ -218,6 +251,7 @@ const VariantGen = ({ addOnUISdk,store}: { addOnUISdk: AddOnSDKAPI,
                         onClearResults={() => setResults(null)}
                         userPrompt={userPrompt}
                         onUserPromptChange={setUserPrompt}
+                        
                         onImageClick={async (base64Image, isOriginal) => {
                             try {
                                 console.log(`[VariantGen] Adding ${isOriginal ? 'original' : 'variant'} image to document...`);
