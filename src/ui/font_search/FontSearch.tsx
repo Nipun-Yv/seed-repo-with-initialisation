@@ -6,13 +6,17 @@ import { FontVariantsList } from './components/FontVariantsList';
 import { FontSearchResponse } from './types';
 import { DocumentSandboxApi } from '../../models/DocumentSandboxApi';
 import { BACKEND_API_URL } from '../../utils/constants';
+import { superimposeBlobs } from '../../utils/blob_conversion';
+import { ClientStorage } from 'https://new.express.adobe.com/static/add-on-sdk/sdk.js';
+import { useNavigate } from 'react-router-dom';
 
 interface FontSearchProps {
     sandboxProxy: DocumentSandboxApi;
+    store:ClientStorage
 }
 
-const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
-    
+const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy,store }) => {
+    const navigate=useNavigate()
     const canvasRef = useRef<ReactSketchCanvasRef>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [loading, setLoading] = useState(false);
@@ -30,9 +34,11 @@ const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
         }
 
         const reader = new FileReader();
-        reader.onloadend = () => {
+        reader.onloadend = async() => {
             if (typeof reader.result === 'string') {
+                canvasRef.current?.clearCanvas();
                 setBackgroundImageUrl(reader.result);
+                
             }
         };
         reader.onerror = () => {
@@ -40,7 +46,6 @@ const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
         };
         reader.readAsDataURL(file);
         
-        // Reset file input so same file can be selected again
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
@@ -59,7 +64,24 @@ const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
         try {
             let file: File;
 
-            // If background image exists, use it; otherwise use the sketch
+            const sessionId = await store.getItem("session_id") as string;
+
+            if (!sessionId) {
+                navigate("/login")
+            }
+
+            // const dataUrl = await canvasRef.current?.exportImage("png");
+            // const response = await fetch(dataUrl!);
+            // const sketchBlob = await response.blob();
+            // let mergedBlob:Blob
+
+            // if (backgroundImageUrl!=undefined) {
+            //     const response = await fetch(backgroundImageUrl);
+            //     const imageBlob = await response.blob();
+            //     mergedBlob=await superimposeBlobs(imageBlob,sketchBlob)
+            // }
+
+            // file = new File([mergedBlob], "background.png", { type: "image/png" });
             if (backgroundImageUrl) {
                 // Convert background image data URL to blob
                 const response = await fetch(backgroundImageUrl);
@@ -80,6 +102,9 @@ const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
 
             const apiResponse = await fetch(`${BACKEND_API_URL}/font/match-font`, {
                 method: "POST",
+                headers:{
+                    "X-Session-ID": sessionId
+                },
                 body: formData
             });
             
@@ -93,7 +118,6 @@ const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
             console.log("Matches:", apiData.matches);
             console.log("Character:", apiData.character);
             
-            // Transform API response to match FontSearchResponse interface
             const data: FontSearchResponse = {
                 identifiedLetter: apiData.character || "A",
                 matches: (apiData.matches || []).map((match: any) => ({
@@ -104,7 +128,6 @@ const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
                     postscriptName: match.postscript_name || match.postscriptName
                 }))
             };
-            console.log(data)
             setResults(data);
         } catch (err) {
             console.error(err);
@@ -131,7 +154,7 @@ const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
                     onClearImage={backgroundImageUrl ? handleClearImage : undefined}
                 />
                 
-                <div className="h-[250px] flex-shrink-0 mt-2">
+                <div className="h-62.5 shrink-0 mt-2">
                     <SketchCanvas canvasRef={canvasRef} backgroundImageUrl={backgroundImageUrl} />
                 </div>
 
@@ -194,7 +217,6 @@ const FontSearch: React.FC<FontSearchProps> = ({ sandboxProxy }) => {
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Font Matches</span>
                         </div>
                         
-                        {/* Placeholder Grid 3 columns */}
                         <div className="grid grid-cols-3 gap-2 pb-2">
                             {[1, 2, 3].map((i) => (
                                 <div 

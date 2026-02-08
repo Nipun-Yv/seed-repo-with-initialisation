@@ -15,9 +15,7 @@ import { SketchCanvas } from "./components/SketchCanvas";
 import { ActionFooter } from "./components/ActionFooter";
 import { useNavigate } from "react-router-dom";
 import {BACKEND_API_URL} from "../../utils/constants"
-
-// const API_BASE_URL = "https://modify.api-easy-eats-canteen.sbs";
-const DEFAULT_BACKGROUND_IMAGE_URL = "";
+import {superimposeBlobs, base64ToBlob, resizeImageBlob} from "../../utils/blob_conversion"
 
 const VariantGen = ({ addOnUISdk,store}: { addOnUISdk: AddOnSDKAPI,
     store:ClientStorage
@@ -26,21 +24,18 @@ const VariantGen = ({ addOnUISdk,store}: { addOnUISdk: AddOnSDKAPI,
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState<DesignResult | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | undefined>(DEFAULT_BACKGROUND_IMAGE_URL);
+    const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | undefined>("");
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const [brushColor, setBrushColor] = useState("#1E293B");
     const [userPrompt, setUserPrompt] = useState<string>("");
     const canvasRef = useRef<ReactSketchCanvasRef>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
   
-  
-    // Helper to handle actions
     const handleUndo = () => canvasRef.current?.undo();
     const handleRedo = () => canvasRef.current?.redo();
     const handleClear = () => canvasRef.current?.clearCanvas();
     const handleClearImage = () => setBackgroundImageUrl(undefined);
 
-    // Handle file upload (from file picker or drag-drop)
     const handleFileUpload = (file: File) => {
         if (!file.type.startsWith('image/')) {
             setError('Please upload an image file');
@@ -65,7 +60,6 @@ const VariantGen = ({ addOnUISdk,store}: { addOnUISdk: AddOnSDKAPI,
         e.target.value = ''; // Reset for re-upload
     };
 
-    // Drag-drop handlers
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
@@ -97,44 +91,6 @@ const VariantGen = ({ addOnUISdk,store}: { addOnUISdk: AddOnSDKAPI,
         }
       }
     };
-
-    const canvasToBlob = (canvas: HTMLCanvasElement): Promise<Blob> =>
-        new Promise<Blob>((resolve, reject) => {
-            canvas.toBlob((result) => {
-                if (result) resolve(result);
-                else reject(new Error("Failed to export canvas to blob"));
-            }, "image/png");
-        });
-
-    const superimposeBlobs = async (backgroundBlob: Blob, overlayBlob: Blob): Promise<Blob> => {
-        const [bgBitmap, overlayBitmap]: [ImageBitmap, ImageBitmap] = await Promise.all([
-            createImageBitmap(backgroundBlob),
-            createImageBitmap(overlayBlob),
-        ]);
-    
-        const canvas = document.createElement("canvas");
-        canvas.width = bgBitmap.width;
-        canvas.height = bgBitmap.height;
-    
-        const ctx = canvas.getContext("2d");
-        if (!ctx) throw new Error("Canvas context not supported");
-        ctx.drawImage(bgBitmap, 0, 0); 
-        
-        // Draw overlay (scaled to fit the background)
-        ctx.drawImage(overlayBitmap, 0, 0, canvas.width, canvas.height);
-    
-        // 4. Export back to a Blob
-   
-            const x=await canvasToBlob(canvas)
-            if(x instanceof Blob){
-                return x;
-            }
-            else{
-                return null;
-            }
-    
-
-    };
     const handleGenerateVariants = async () => {
         if (!canvasRef.current) {
             setError("Canvas is not available");
@@ -148,12 +104,18 @@ const VariantGen = ({ addOnUISdk,store}: { addOnUISdk: AddOnSDKAPI,
         try {
             const dataUrl = await canvasRef.current.exportImage("png");
             const response = await fetch(dataUrl);
-            const backgroundResponse = await fetch(backgroundImageUrl);
-            
+
+            let mergedBlob:Blob;
+
             const overlayBlob = await response.blob();
-            const backgroundBlob = await backgroundResponse.blob();
-        
-            const mergedBlob = await superimposeBlobs(backgroundBlob, overlayBlob);
+            if(backgroundImageUrl){
+                const backgroundResponse = await fetch(backgroundImageUrl);
+                const backgroundBlob = await backgroundResponse.blob();
+                mergedBlob = await superimposeBlobs(backgroundBlob, overlayBlob);
+            }
+            else{
+                mergedBlob=overlayBlob
+            }
 
             const file = new File([mergedBlob], "sketch.png", { type: "image/png" });
             
@@ -208,59 +170,6 @@ const VariantGen = ({ addOnUISdk,store}: { addOnUISdk: AddOnSDKAPI,
             setLoading(false);
         }
     };
-  
-    const base64ToBlob = (base64: string, mimeType: string = 'image/jpeg'): Blob => {
-        const byteCharacters = atob(base64);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        return new Blob([byteArray], { type: mimeType });
-    };
-
-    const resizeImageBlob = async (blob: Blob, targetWidth: number = 300): Promise<Blob> => {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            const url = URL.createObjectURL(blob);
-            
-            img.onload = () => {
-                URL.revokeObjectURL(url);
-                
-                // Calculate height maintaining aspect ratio
-                const width = targetWidth;
-                const height = (img.height / img.width) * targetWidth;
-                
-                // Create canvas and resize
-                const canvas = document.createElement('canvas');
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                
-                if (!ctx) {
-                    reject(new Error('Could not get canvas context'));
-                    return;
-                }
-                
-                ctx.drawImage(img, 0, 0, width, height);
-                
-                canvas.toBlob((resizedBlob) => {
-                    if (resizedBlob) {
-                        resolve(resizedBlob);
-                    } else {
-                        reject(new Error('Failed to resize image'));
-                    }
-                }, blob.type || 'image/jpeg', 0.9);
-            };
-            
-            img.onerror = () => {
-                URL.revokeObjectURL(url);
-                reject(new Error('Failed to load image'));
-            };
-            
-            img.src = url;
-        });
-    };
 
         return (
             <Theme system="express" scale="medium" color="light" className="h-full">
@@ -270,7 +179,6 @@ const VariantGen = ({ addOnUISdk,store}: { addOnUISdk: AddOnSDKAPI,
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                 >
-                    {/* Hidden file input */}
                     <input
                         ref={fileInputRef}
                         type="file"
@@ -279,7 +187,6 @@ const VariantGen = ({ addOnUISdk,store}: { addOnUISdk: AddOnSDKAPI,
                         className="hidden"
                     />
                     
-                    {/* Drag overlay */}
                     {isDraggingOver && (
                         <div className="absolute inset-0 bg-indigo-500/10 z-50 flex items-center justify-center pointer-events-none">
                             <div className="bg-white rounded-xl p-6 shadow-xl border-2 border-dashed border-indigo-400">
@@ -288,7 +195,6 @@ const VariantGen = ({ addOnUISdk,store}: { addOnUISdk: AddOnSDKAPI,
                         </div>
                     )}
                     
-                    {/* <Header /> */}
                     <div className="flex-1 flex flex-col gap-2 p-4 min-h-0 overflow-y-auto">
                         <CanvasToolbar 
                             onUndo={handleUndo}

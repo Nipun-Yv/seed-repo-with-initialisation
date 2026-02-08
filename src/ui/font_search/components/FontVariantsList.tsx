@@ -36,8 +36,7 @@ export const FontVariantsList: React.FC<FontVariantsListProps> = ({ results, sel
                             ${isApplying ? "opacity-50 cursor-not-allowed" : ""}
                         `}
                     >
-                        {/* Font Preview */}
-                        <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-indigo-50/30 p-2 relative">
+                        <div className="flex-1 flex flex-col items-center justify-center bg-linear-to-br from-slate-50 to-indigo-50/30 p-2 relative">
                             {(() => {
                                 const imageBase64 = match.previewUrl;
                                 if (imageBase64) {
@@ -72,8 +71,7 @@ export const FontVariantsList: React.FC<FontVariantsListProps> = ({ results, sel
                                 );
                             })()}
                         </div>
-                        
-                        {/* Font Name */}
+        
                         <div className="px-2 py-2 bg-white border-t border-slate-100 flex items-center justify-between gap-1">
                             <p className="text-[10px] font-semibold text-slate-900 truncate flex-1" title={match.fontName}>
                                 {match.fontName}

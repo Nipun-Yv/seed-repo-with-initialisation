@@ -3,6 +3,6 @@
     "compilerOptions": {
         "lib": ["dom"]
     },
-    "include": ["./**/*", "global/Login.tsx"],
+    "include": ["./**/*", "login/Login.tsx"],
     "jsx": "react-jsx",
 }

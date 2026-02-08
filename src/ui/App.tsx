@@ -1,16 +1,14 @@
-// src/App.tsx
 import { AddOnSDKAPI, ClientStorage } from "https://new.express.adobe.com/static/add-on-sdk/sdk.js";
 import React from "react";
 import { HashRouter, Routes, Route, NavLink, useNavigate } from "react-router-dom";
 import { Sparkles, Search, Type, LayoutDashboard, LogOut } from "lucide-react";
 import { DocumentSandboxApi } from "../models/DocumentSandboxApi";
 import { AuthProvider, useAuth } from "../context/AuthContext";
-import { ProtectedRoute } from "./global/ProtectedRoute";
+import { ProtectedRoute } from "./login/ProtectedRoute";
 import BrandSearch from "./brand_search/BrandSearch";
 import FontSearch from "./font_search/FontSearch";
 import VariantGen from "./variant_gen/VariantGen";
-import Login from "./global/Login";
-import { Button } from "@swc-react/button";
+import Login from "./login/Login";
 
 const AppContent = ({
     addOnUISdk,
@@ -101,7 +99,7 @@ const AppContent = ({
                         path="/font-search"
                         element={
                             <ProtectedRoute>
-                                <FontSearch sandboxProxy={sandboxProxy} />
+                                <FontSearch sandboxProxy={sandboxProxy} store={store} />
                             </ProtectedRoute>
                         }
                     />

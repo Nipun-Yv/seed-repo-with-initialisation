@@ -89,8 +89,9 @@ export const AuthProvider = ({ store, children, addOnUISdk }: AuthProviderProps)
                 codeChallenge: codeChallenge
             });
             
-            console.log('OAuth completed');
-            
+            if(result.result.status=="POPUP_BLOCKED"){
+                throw new Error("POPUP_BLOCKED");
+            }
             if (!result.code) {
                 throw new Error("Code not received");
             }

@@ -33,10 +33,15 @@ const Login = () => {
 
         try {
             await login();
-            setMessage("Please complete authorization in the popup window...");
+            setMessage("Please complete authorization in the popup window...\n");
             navigate("/")
         } catch (err) {
-            setError("Failed to initiate Dropbox login. Please try again.");
+            if(err.message=="POPUP_BLOCKED"){
+                setError("Kindly enable pop-ups for your browser to log in and please try again")
+            }
+            else{
+                setError("Failed to initiate Dropbox login. Please try again.");
+            }
         } finally {
             setLoading(false);
         }
